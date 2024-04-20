@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum ColorTextField {
+enum FocusTextField: Hashable {
     case red, green, blue
 }
 
@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var redValue = Double.random(in: 0...255)
     @State private var greenValue = Double.random(in: 0...255)
     @State private var blueValue = Double.random(in: 0...255)
+    @FocusState private var focusedField: FocusTextField?
     
     var body: some View {
         VStack(spacing: 50) {
@@ -25,9 +26,9 @@ struct ContentView: View {
             )
             
             VStack(spacing: 20) {
-                ColorSliderView(colorValue: $redValue, tint: .red)
-                ColorSliderView(colorValue: $greenValue, tint: .green)
-                ColorSliderView(colorValue: $blueValue, tint: .blue)
+                ColorSliderView(colorValue: $redValue, tint: .red, focusType: .red)
+                ColorSliderView(colorValue: $greenValue, tint: .green, focusType: .green)
+                ColorSliderView(colorValue: $blueValue, tint: .blue, focusType: .blue)
             }
             
             Spacer()
@@ -63,9 +64,12 @@ private struct ColorRectangleView: View {
 }
 
 private struct ColorSliderView: View {
+    @FocusState var focus: FocusTextField?
     @Binding var colorValue: Double
-    let tint: Color
     
+    let tint: Color
+    let focusType: FocusTextField
+
     var body: some View {
         HStack(spacing: 25) {
             Text(lround(colorValue).formatted())
@@ -74,25 +78,28 @@ private struct ColorSliderView: View {
             Slider(value: $colorValue, in: 0...255, step: 1)
                 .tint(tint)
             
-            ColorTextField()
+            TextField(
+                "",
+                value: $colorValue,
+                formatter: NumberFormatter()
+            )
+            .frame(width: 50)
+            .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
+            .multilineTextAlignment(.center)
+            .textFieldStyle(.roundedBorder)
+            .keyboardType(.numberPad)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    
+                    Button("Done") {
+                        focus = nil
+                    }
+                }
+            }
+            .focused($focus, equals: focusType)
         }
     }
 }
 
-struct ColorTextField: View {
-    var body: some View {
-        TextField(
-            "",
-            value: $colorValue,
-            formatter: NumberFormatter()
-        )
-        .frame(width: 40)
-        .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
-        .multilineTextAlignment(.center)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke()
-                .foregroundStyle(.gray)
-        )
-    }
-}
+
