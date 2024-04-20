@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+enum ColorTextField {
+    case red, green, blue
+}
+
 struct ContentView: View {
     @State private var redValue = Double.random(in: 0...255)
     @State private var greenValue = Double.random(in: 0...255)
@@ -59,15 +63,37 @@ private struct ColorRectangle: View {
 }
 
 private struct ColorSlider: View {
+    @FocusState var focus: ColorTextField?
     @Binding var colorValue: Double
     let tint: Color
     
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 25) {
             Text(lround(colorValue).formatted())
                 .frame(width: 40)
+            
             Slider(value: $colorValue, in: 0...255, step: 1)
                 .tint(tint)
+            
+            ColorTextField()
         }
+    }
+}
+
+struct ColorTextField: View {
+    var body: some View {
+        TextField(
+            "",
+            value: $colorValue,
+            formatter: NumberFormatter()
+        )
+        .frame(width: 40)
+        .padding(EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10))
+        .multilineTextAlignment(.center)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke()
+                .foregroundStyle(.gray)
+        )
     }
 }
