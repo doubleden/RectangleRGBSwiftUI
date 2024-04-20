@@ -14,16 +14,16 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 50) {
-            ColorRectangle(
+            ColorRectangleView(
                 redValue: redValue,
                 greenValue: greenValue,
                 blueValue: blueValue
             )
             
             VStack(spacing: 20) {
-                ColorSlider(colorValue: $redValue, tint: .red)
-                ColorSlider(colorValue: $greenValue, tint: .green)
-                ColorSlider(colorValue: $blueValue, tint: .blue)
+                ColorSliderView(colorValue: $redValue, tint: .red)
+                ColorSliderView(colorValue: $greenValue, tint: .green)
+                ColorSliderView(colorValue: $blueValue, tint: .blue)
             }
             
             Spacer()
@@ -36,7 +36,7 @@ struct ContentView: View {
     ContentView()
 }
 
-private struct ColorRectangle: View {
+private struct ColorRectangleView: View {
     let redValue: Double
     let greenValue: Double
     let blueValue: Double
@@ -58,7 +58,7 @@ private struct ColorRectangle: View {
     }
 }
 
-private struct ColorSlider: View {
+private struct ColorSliderView: View {
     @Binding var colorValue: Double
     let tint: Color
     
