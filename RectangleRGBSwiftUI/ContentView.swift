@@ -37,7 +37,7 @@ struct ContentView: View {
     ContentView()
 }
 
-struct ColorRectangle: View {
+private struct ColorRectangle: View {
     let redValue: Double
     let greenValue: Double
     let blueValue: Double
@@ -59,7 +59,7 @@ struct ColorRectangle: View {
     }
 }
 
-struct ColorSlider: View {
+private struct ColorSlider: View {
     let tint: Color
     @Binding var colorValue: Double
     
