@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    
     @State private var redValue = Double.random(in: 0...255)
     @State private var greenValue = Double.random(in: 0...255)
     @State private var blueValue = Double.random(in: 0...255)
@@ -21,10 +20,10 @@ struct ContentView: View {
                 blueValue: blueValue
             )
             
-            VStack {
-                ColorSlider(tint: .red, colorValue: $redValue)
-                ColorSlider(tint: .green, colorValue: $greenValue)
-                ColorSlider(tint: .blue, colorValue: $blueValue)
+            VStack(spacing: 20) {
+                ColorSlider(colorValue: $redValue, tint: .red)
+                ColorSlider(colorValue: $greenValue, tint: .green)
+                ColorSlider(colorValue: $blueValue, tint: .blue)
             }
             
             Spacer()
@@ -60,8 +59,8 @@ private struct ColorRectangle: View {
 }
 
 private struct ColorSlider: View {
-    let tint: Color
     @Binding var colorValue: Double
+    let tint: Color
     
     var body: some View {
         HStack(spacing: 10) {
