@@ -43,7 +43,7 @@ private struct ColorRectangleView: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
-            .frame(width: 300, height: 150)
+            .frame(height: 150)
             .foregroundStyle(
                 Color(
                     red: redValue / 255,
