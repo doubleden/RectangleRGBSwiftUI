@@ -7,112 +7,49 @@
 
 import SwiftUI
 
-enum FocusTextField: Hashable {
-    case red, green, blue
-}
-
 struct ContentView: View {
-    @FocusState var focusedField: FocusTextField?
-    @State private var isPresented = false
     
-    @State private var redValue = Double.random(in: 0...255)
-    @State private var greenValue = Double.random(in: 0...255)
-    @State private var blueValue = Double.random(in: 0...255)
+    @State private var redValue = Double.random(in: 0...255).rounded()
+    @State private var greenValue = Double.random(in: 0...255).rounded()
+    @State private var blueValue = Double.random(in: 0...255).rounded()
     
-    @State private var redTextFieldInput = 0.0
-    @State private var greenTextFieldInput = 0.0
-    @State private var blueTextFieldInput = 0.0
+    @FocusState private var isPresented: Bool
     
     var body: some View {
-        VStack(spacing: 50) {
-            ColorRectangleView(
-                redValue: redValue,
-                greenValue: greenValue,
-                blueValue: blueValue
-            )
-            
-            VStack(spacing: 20) {
-                ColorSliderView(
-                    colorValue: $redValue,
-                    colorTextFieldInput: $redTextFieldInput,
-                    isPresentet: $isPresented,
-                    tint: .red
+        ZStack {
+            VStack(spacing: 50) {
+                ColorRectangleView(
+                    redValue: redValue,
+                    greenValue: greenValue,
+                    blueValue: blueValue
                 )
-                    .focused($focusedField, equals: .red)
                 
-                ColorSliderView(
-                    colorValue: $greenValue,
-                    colorTextFieldInput: $greenTextFieldInput,
-                    isPresentet: $isPresented,
-                    tint: .green
-                )
-                    .focused($focusedField, equals: .green)
-                
-                ColorSliderView(
-                    colorValue: $blueValue,
-                    colorTextFieldInput: $blueTextFieldInput,
-                    isPresentet: $isPresented,
-                    tint: .blue
-                )
-                    .focused($focusedField, equals: .blue)
-            }
-            
-            Spacer()
-        }
-        .padding()
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                
-                Button("Done") {
-                    switch focusedField {
-                    case .red:
-                        checkTextFieldInput(.red)
-                        redValue = redTextFieldInput
-                    case .green:
-                        checkTextFieldInput(.green)
-                        greenValue = greenTextFieldInput
-                    case .blue:
-                        checkTextFieldInput(.blue)
-                        blueValue = blueTextFieldInput
-                    case nil:
-                        break
-                    }
-                    focusedField = nil
+                VStack(spacing: 20) {
+                    ColorSliderView(colorValue: $redValue, tint: .red)
+                    ColorSliderView(colorValue: $greenValue, tint: .green)
+                    ColorSliderView(colorValue: $blueValue, tint: .blue)
                 }
+                .focused($isPresented)
                 
+                
+                Spacer()
             }
+            .padding()
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    
+                    Button("Done") {
+                       isPresented = false
+                    }
+                    
+                }
         }
-        .onAppear {
-            redTextFieldInput = redValue
-            greenTextFieldInput = greenValue
-            blueTextFieldInput = blueValue
         }
-    }
-    
-    private func checkTextFieldInput(_ textField: FocusTextField) {
-        
-        switch textField {
-        case .red:
-            guard redTextFieldInput > 0, redTextFieldInput < 255 else {
-                isPresented = true
-                return
-            }
-            redValue = redTextFieldInput
-        case .green:
-            guard greenTextFieldInput > 0, greenTextFieldInput < 255 else {
-                isPresented = true
-                return
-            }
-            greenValue = greenTextFieldInput
-        case .blue:
-            guard blueTextFieldInput > 0, blueTextFieldInput < 255 else {
-                isPresented = true
-                return
-            }
-            blueValue = blueTextFieldInput
+        .background(.brown)
+        .onTapGesture {
+            isPresented = false
         }
-        focusedField = nil
     }
 }
 
@@ -120,14 +57,14 @@ struct ContentView: View {
     ContentView()
 }
 
-private struct ColorRectangleView: View {
+struct ColorRectangleView: View {
     let redValue: Double
     let greenValue: Double
     let blueValue: Double
     
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
-            .frame(width: 300, height: 150)
+            .frame(height: 150)
             .foregroundStyle(
                 Color(
                     red: redValue / 255,
@@ -142,49 +79,63 @@ private struct ColorRectangleView: View {
     }
 }
 
-private struct ColorSliderView: View {
+struct ColorSliderView: View {
     @Binding var colorValue: Double
-    @Binding var colorTextFieldInput: Double
-    @Binding var isPresentet: Bool
-    
     let tint: Color
+    
+    @State private var textInput = ""
+    @State private var isShowAlert = false
+    @State private var oldColorValue = ""
+    
 
     var body: some View {
         HStack(spacing: 25) {
-            Text(lround(colorValue).formatted())
+            Text(colorValue.formatted())
                 .frame(width: 40)
             
             Slider(value: $colorValue, in: 0...255, step: 1)
                 .tint(tint)
+                .onChange(of: colorValue) { oldValue, newValue in
+                    textInput = newValue.formatted()
+                    oldColorValue = oldValue.formatted()
+                }
             
-            TextField(
-                "",
-                value: $colorTextFieldInput,
-                formatter: makeFormatter()
-            )
-            .frame(width: 50)
-            .padding(
-                EdgeInsets(
-                    top: 5,
-                    leading: 10,
-                    bottom: 5,
-                    trailing: 10
-                )
-            )
-            .multilineTextAlignment(.center)
-            .textFieldStyle(.roundedBorder)
-            .keyboardType(.numberPad)
-            .onChange(of: colorValue) {
-                colorTextFieldInput = colorValue
-            }
-            .alert("Wrong format", isPresented: $isPresentet, actions: {})
+            TextFieldView(text: $textInput, action: validateInput)
+                .alert("Wrong format", isPresented: $isShowAlert, actions: {}) {
+                    Text("Please enter value from 0 to 255")
+                }
+        }
+        .onAppear {
+            textInput = colorValue.formatted()
         }
     }
     
-    private func makeFormatter() -> NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.maximum = 255
-        return formatter
+    private func validateInput() {
+        if let value = Double(textInput), (0...255).contains(value) {
+            self.colorValue = value
+        } else {
+            isShowAlert.toggle()
+            colorValue = Double(oldColorValue) ?? 0
+            textInput = oldColorValue
+        }
+    }
+}
+
+struct TextFieldView: View {
+    @Binding var text: String
+    
+    let action: () -> Void
+        
+    var body: some View {
+        TextField("0", text: $text) { _ in
+            withAnimation {
+                action()
+            }
+        }
+        .frame(width: 55, alignment: .trailing)
+        .multilineTextAlignment(.trailing)
+        .textFieldStyle(.roundedBorder)
+        .keyboardType(.numberPad)
     }
 }
 
